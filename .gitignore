@@ -21,3 +21,36 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+
+logs/
+project/target/
+project/project/
+build/
+*.iml
+*.ipr
+*.iws
+.idea/
+.out
+out
+output
+.gradle
+.project
+.cache
+.classpath
+.settings/
+*.dot
+.DS_Store
+*part-*
+derby.log
+metastore_db
+spark-warehouse
+*.bak
+*.log
+*.conf
+swagger-ui/
+tempFiles/
+userfiles/
+.vscode
+*yarn.lock
+bin/upgrade.go
