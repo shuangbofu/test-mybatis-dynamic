@@ -33,19 +33,4 @@ public abstract class BaseTable extends SqlTable {
     }
 
     public abstract List<SqlColumn<?>> getAllColumns();
-
-    @Override
-    public <T> SqlColumn<T> column(String name) {
-        return super.column(name);
-    }
-
-    @Override
-    public <T> SqlColumn<T> column(String name, JDBCType jdbcType) {
-        return super.column(name, jdbcType);
-    }
-
-    @Override
-    public <T> SqlColumn<T> column(String name, JDBCType jdbcType, String typeHandler) {
-        return super.column(name, jdbcType, typeHandler);
-    }
 }

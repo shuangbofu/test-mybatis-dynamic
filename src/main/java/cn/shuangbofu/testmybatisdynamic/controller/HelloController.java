@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
+import static org.mybatis.dynamic.sql.SqlBuilder.isLike;
 
 @RequestMapping
 @RestController
@@ -44,7 +45,6 @@ public class HelloController {
 
     @PostMapping("/person")
     public boolean insert(@RequestBody PersonRecord record) {
-//        record.setBirthDate(new Date());
         boolean b = personRecordDao.insert(record) > 0;
         System.out.println(record.getId());
         return b;
@@ -52,7 +52,9 @@ public class HelloController {
 
     @GetMapping("/test")
     public String test(String firstName) {
-        return personRecordDao.getLikeFirstName(firstName);
+        return personRecordDao.selectOneValueBy((t, i) -> i.and(t.firstName, isLike(firstName).map(j -> String.format("%%%s%%", j))),
+                PersonRecord::getLastName)
+                .orElse(null);
     }
 
     @GetMapping("/person/count")

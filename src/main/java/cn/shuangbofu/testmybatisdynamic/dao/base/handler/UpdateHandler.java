@@ -5,5 +5,7 @@ import org.mybatis.dynamic.sql.update.UpdateDSL;
 import org.mybatis.dynamic.sql.update.UpdateModel;
 import org.mybatis.dynamic.sql.util.Buildable;
 
-public interface UpdateHandler<T extends BaseTable> extends Handler<T, UpdateDSL<UpdateModel>, Buildable<UpdateModel>> {
+import java.util.function.BiFunction;
+
+public interface UpdateHandler<T extends BaseTable> extends BiFunction<T, UpdateDSL<UpdateModel>, Buildable<UpdateModel>> {
 }

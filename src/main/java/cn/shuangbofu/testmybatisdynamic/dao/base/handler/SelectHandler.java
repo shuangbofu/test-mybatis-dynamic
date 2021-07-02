@@ -5,5 +5,7 @@ import org.mybatis.dynamic.sql.select.QueryExpressionDSL;
 import org.mybatis.dynamic.sql.select.SelectModel;
 import org.mybatis.dynamic.sql.util.Buildable;
 
-public interface SelectHandler<T extends BaseTable> extends Handler<T, QueryExpressionDSL<SelectModel>.QueryExpressionWhereBuilder, Buildable<SelectModel>> {
+import java.util.function.BiFunction;
+
+public interface SelectHandler<T extends BaseTable> extends BiFunction<T, QueryExpressionDSL<SelectModel>.QueryExpressionWhereBuilder, Buildable<SelectModel>> {
 }

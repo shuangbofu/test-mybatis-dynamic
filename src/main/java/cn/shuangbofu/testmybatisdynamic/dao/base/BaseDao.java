@@ -45,9 +45,10 @@ import static org.mybatis.dynamic.sql.SqlBuilder.*;
  * 5、selectOne避免报错强制limit 1
  * 6、orderBy默认id
  * 7、insert mapping映射匹配
+ * 8、insert时更新gmt_modified和gmt_create，update时更新gmt_modified
  * <p>
  * <p>
- * 8、常用方法
+ * 常用方法
  * countBy, countAll
  * selectOneBy, selectOneById, selectOneValueBy
  * selectManyBy, selectManyInIdsAndBy, selectManyInIds, selectAll
@@ -77,7 +78,7 @@ public abstract class BaseDao<M extends BaseMapper<T>, T extends BaseModel, B ex
      * @return
      */
     protected RenderingStrategy getRenderingStrategy() {
-        return RenderingStrategies.MYBATIS3;
+        return RenderingStrategies.SPRING_NAMED_PARAMETER;
     }
 
     /**
@@ -100,7 +101,7 @@ public abstract class BaseDao<M extends BaseMapper<T>, T extends BaseModel, B ex
 
     protected SelectWhereHandler getFinalSelectWhereHandler(SelectHandler<B> handler) {
         return (builder) -> {
-            handler.handle(table, builder);
+            handler.apply(table, builder);
             builder.orderBy(idSqlColumn);
             return Optional.ofNullable(getDefaultSelectWhereHandler()).orElse(i -> i).apply(builder);
         };
@@ -118,7 +119,7 @@ public abstract class BaseDao<M extends BaseMapper<T>, T extends BaseModel, B ex
     @Override
     public Optional<T> selectOneBy(SelectHandler<B> handler, BasicColumn... selectList) {
         Buildable<SelectModel> buildable = getFinalSelectWhereHandler((table, i) -> {
-            handler.handle(table, i);
+            handler.apply(table, i);
             // select one 强制增加limit 1
             i.limit(1);
             return i;
@@ -166,7 +167,7 @@ public abstract class BaseDao<M extends BaseMapper<T>, T extends BaseModel, B ex
 
     @Override
     public List<T> selectManyInIdsAndBy(SelectHandler<B> handler, List<Long> ids, BasicColumn... selectList) {
-        return selectManyBy((table, i) -> handler.handle(table, i.and(idSqlColumn, isIn(ids))), selectList);
+        return selectManyBy((table, i) -> handler.apply(table, i.and(idSqlColumn, isIn(ids))), selectList);
     }
 
     @Override
@@ -175,7 +176,7 @@ public abstract class BaseDao<M extends BaseMapper<T>, T extends BaseModel, B ex
         List<T> list = Lists.newArrayList();
         if (count > 0) {
             SelectHandler<B> selectHandler = (t, i) -> {
-                handler.handle(t, i);
+                handler.apply(t, i);
                 i.limit(Math.max(pageSize, 1)).offset(Math.max(pageNum - 1, 0));
                 return i;
             };
@@ -194,8 +195,9 @@ public abstract class BaseDao<M extends BaseMapper<T>, T extends BaseModel, B ex
         UpdateDSL<UpdateModel> update = SqlBuilder.update(table);
         Function<UpdateDSL<UpdateModel>, UpdateDSL<UpdateModel>> function = dsl -> {
             long now = System.currentTimeMillis();
-            dsl.set(table.getGmtCreateSqlColumn()).equalTo(now).set(table.getGmtModifiedSqlColumn()).equalTo(now);
-            handler.handle(table, dsl);
+            dsl.set(table.getGmtCreateSqlColumn()).equalTo(now)
+                    .set(table.getGmtModifiedSqlColumn()).equalTo(now);
+            handler.apply(table, dsl);
             return dsl;
         };
         return mapper.update(renderUpdate(Optional.ofNullable(getDefaultUpdateWhereHandler()).orElse(i -> i)
@@ -206,14 +208,14 @@ public abstract class BaseDao<M extends BaseMapper<T>, T extends BaseModel, B ex
     public int updateById(Long id, UpdateHandler<B> handler) {
         UpdateHandler<B> h = (t, i) -> {
             i.where(idSqlColumn, isEqualTo(id));
-            return handler.handle(t, i);
+            return handler.apply(t, i);
         };
         return updateBy(h);
     }
 
     @Override
     public int deleteBy(DeleteWhereHandler<B> handler) {
-        return mapper.delete(renderDelete(handler.handle(table, deleteFrom(table).where())));
+        return mapper.delete(renderDelete(handler.apply(table, deleteFrom(table).where())));
     }
 
     @Override
